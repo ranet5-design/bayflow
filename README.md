@@ -4,8 +4,8 @@ Multi-tenant management system for independent auto repair shops.
 
 Customers find a shop, book a slot and follow their car from check-in to pick-up. Shop staff (Owner, Service Advisor, Technician, Parts Person, QC Inspector) work the whole repair job in one role-based POS, and every step is recorded.
 
-- **Live demo:** `<add your deployed URL here>`
-- **Repository:** `<add your GitHub URL here>`
+- **Live demo:** https://bayflow-production-c33a.up.railway.app
+- **Repository:** https://github.com/ranet5-design/bayflow
 
 ## Features
 
@@ -233,15 +233,16 @@ bayflow/
 
 ## Deployment
 
-The repo includes `render.yaml` for [Render](https://render.com):
+The live demo runs on [Railway](https://railway.com):
 
-1. Push the repo to GitHub.
-2. On Render: New > Blueprint > pick the repo. It creates a Node web service with `npm ci --omit=dev` / `npm start`, a generated `JWT_SECRET`, `SEED_ON_START=true` and `TZ=Asia/Karachi`.
-3. Open the URL. The first start seeds the demo data.
+1. New Project > GitHub Repository > `ranet5-design/bayflow`. Railway detects Node and runs `npm install` / `npm start`.
+2. Service > Variables: `NODE_ENV=production`, `TZ=Asia/Karachi`, `DATABASE_PATH=./data/bayflow.db`, `SEED_ON_START=true`, `JWT_EXPIRES_IN=7d` and a long random `JWT_SECRET`.
+3. Settings > Networking > Generate Domain (target port 8080, which Railway passes in as `PORT`).
+4. Open the URL. The first start seeds the demo data. Health check: `/api/health`.
 
-Any host that runs Node 22.16+ works the same way (Railway, Fly.io, a VPS): set the env vars from `.env.example` and run `npm start`.
+The repo also has a `render.yaml` Blueprint for [Render](https://render.com) with the same settings. Any host that runs Node 22.16+ works the same way: set the env vars from `.env.example` and run `npm start`.
 
-Note: on Render's free plan the disk is not persistent, so data resets to the seed after a redeploy or restart. That is fine for a demo; for real use attach a persistent disk and point `DATABASE_PATH` at it.
+Note: the container disk is not persistent, so data goes back to the seed after a redeploy. That is fine for a demo; for real use attach a volume and point `DATABASE_PATH` at it.
 
 ## Known limitations / not done
 
