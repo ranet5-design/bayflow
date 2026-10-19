@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: bayflow
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '24'
+      - key: TZ
+        value: Asia/Karachi
+      - key: DATABASE_PATH
+        value: ./data/bayflow.db
+      - key: SEED_ON_START
+        value: 'true'
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: JWT_SECRET
+        generateValue: true
