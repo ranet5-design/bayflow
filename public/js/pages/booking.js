@@ -99,7 +99,9 @@ export async function renderBooking(root, [shopId]) {
     }
     box.innerHTML = `<div class="slot-grid">${free
       .map(
-        (s) => `<button type="button" class="slot ${s.time === state.time ? 'selected' : ''}" data-time="${s.time}">
+        (
+          s,
+        ) => `<button type="button" class="slot ${s.time === state.time ? 'selected' : ''}" data-time="${s.time}">
           ${s.time}<small>${s.capacity - s.booked} left</small></button>`,
       )
       .join('')}</div>`;
@@ -170,7 +172,12 @@ export async function renderBooking(root, [shopId]) {
       state.notes = values.notes.trim();
     } else if (state.step === 2) {
       if (!session.user) {
-        state.customer = { name: values.name, email: values.email, phone: values.phone, password: values.password };
+        state.customer = {
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          password: values.password,
+        };
       }
       state.vehicle = {
         regNo: values.regNo,

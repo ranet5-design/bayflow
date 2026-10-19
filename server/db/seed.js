@@ -203,7 +203,14 @@ function seedHistory(db, ids) {
     notes: 'Due for 10,000 km service',
     slotDate: nextWorkingDay(row, todayString()),
     slotTime: '11:00',
-    vehicle: { regNo: 'LEB-7788', make: 'Toyota', model: 'Corolla', year: 2019, color: 'White', mileage: 58000 },
+    vehicle: {
+      regNo: 'LEB-7788',
+      make: 'Toyota',
+      model: 'Corolla',
+      year: 2019,
+      color: 'White',
+      mileage: 58000,
+    },
   });
 
   const sa = { userId: shop.staff.bilal, role: 'SA' };

@@ -3,7 +3,13 @@ import { z } from 'zod';
 import { optionalAuth, signToken } from '../middleware/auth.js';
 import { createBooking } from '../services/bookingService.js';
 import { getSlots, workingDays } from '../services/slotService.js';
-import { checkPassword, findByEmail, getMemberships, hashPassword, publicUser } from '../services/userService.js';
+import {
+  checkPassword,
+  findByEmail,
+  getMemberships,
+  hashPassword,
+  publicUser,
+} from '../services/userService.js';
 import { notFound, unauthorized } from '../utils/errors.js';
 import { date, email, id, parse, password, time } from '../utils/validate.js';
 
@@ -50,7 +56,10 @@ router.get('/shops', (req, res) => {
   const shops = req.db
     .prepare(`SELECT s.* FROM shops s ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY s.name`)
     .all(...params);
-  const cities = req.db.prepare('SELECT DISTINCT city FROM shops ORDER BY city').all().map((r) => r.city);
+  const cities = req.db
+    .prepare('SELECT DISTINCT city FROM shops ORDER BY city')
+    .all()
+    .map((r) => r.city);
 
   res.json({ shops: shops.map((s) => shopCard(req.db, s)), cities });
 });

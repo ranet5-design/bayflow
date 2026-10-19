@@ -18,7 +18,8 @@ export function progressBar(status) {
   const current = STAGES.findIndex(([, list]) => list.includes(status));
   return `
     <div class="progress">${STAGES.map(
-      (_, i) => `<span class="${i < current || status === 'COMPLETED' ? 'done' : i === current ? 'now' : ''}"></span>`,
+      (_, i) =>
+        `<span class="${i < current || status === 'COMPLETED' ? 'done' : i === current ? 'now' : ''}"></span>`,
     ).join('')}</div>
     <div class="progress-labels"><span>${STAGES[0][0]}</span><span>${current > 0 && current < STAGES.length - 1 ? STAGES[current][0] : ''}</span><span>${STAGES.at(-1)[0]}</span></div>`;
 }
@@ -26,7 +27,9 @@ export function progressBar(status) {
 export function historyList(history) {
   return `<ul class="history">${history
     .map(
-      (h) => `<li><b>${esc(statusLabel(h.toStatus))}</b>${h.fromStatus === h.toStatus ? ` <span class="muted">(${esc(h.action.replaceAll('_', ' '))})</span>` : ''}
+      (
+        h,
+      ) => `<li><b>${esc(statusLabel(h.toStatus))}</b>${h.fromStatus === h.toStatus ? ` <span class="muted">(${esc(h.action.replaceAll('_', ' '))})</span>` : ''}
         ${h.note ? `<div>${esc(h.note)}</div>` : ''}
         <small>${fmtDateTime(h.at)} &middot; ${esc(h.actorName ?? 'System')}${h.actorRole ? ` (${esc(ROLE_LABEL[h.actorRole] ?? 'Customer')})` : ''}</small></li>`,
     )

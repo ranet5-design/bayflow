@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, shopAccess } from '../middleware/auth.js';
-import { createPurchaseOrder, listPurchaseOrders, receivePurchaseOrder, shortages } from '../services/inventoryService.js';
+import {
+  createPurchaseOrder,
+  listPurchaseOrders,
+  receivePurchaseOrder,
+  shortages,
+} from '../services/inventoryService.js';
 import { STATUS } from '../services/bookingMachine.js';
 import { notify } from '../services/notificationService.js';
 import { conflict, notFound } from '../utils/errors.js';
@@ -12,7 +17,12 @@ const router = Router({ mergeParams: true });
 router.use(requireAuth);
 
 const partSchema = z.object({
-  sku: z.string().trim().min(2).max(30).transform((v) => v.toUpperCase()),
+  sku: z
+    .string()
+    .trim()
+    .min(2)
+    .max(30)
+    .transform((v) => v.toUpperCase()),
   name: z.string().trim().min(2).max(80),
   qtyOnHand: z.coerce.number().int().min(0).max(100000),
   reorderLevel: z.coerce.number().int().min(0).max(100000),
@@ -37,7 +47,9 @@ router.post('/parts', shopAccess('PARTS'), (req, res) => {
   const dup = req.db.prepare('SELECT 1 FROM parts WHERE shop_id = ? AND sku = ?').get(req.shopId, p.sku);
   if (dup) throw conflict(`SKU ${p.sku} already exists in this shop`);
   const result = req.db
-    .prepare('INSERT INTO parts (shop_id, sku, name, qty_on_hand, reorder_level, unit_cost) VALUES (?, ?, ?, ?, ?, ?)')
+    .prepare(
+      'INSERT INTO parts (shop_id, sku, name, qty_on_hand, reorder_level, unit_cost) VALUES (?, ?, ?, ?, ?, ?)',
+    )
     .run(req.shopId, p.sku, p.name, p.qtyOnHand, p.reorderLevel, p.unitCost);
   res.status(201).json({ id: Number(result.lastInsertRowid) });
 });

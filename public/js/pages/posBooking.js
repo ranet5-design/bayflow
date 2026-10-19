@@ -98,7 +98,9 @@ export function openBookingDrawer(shopId, bookingId, onChange) {
     const recalc = () => {
       let total = Number(form.elements.labourCost.value || 0);
       linesBox.querySelectorAll('.estimate-line').forEach((row) => {
-        total += Number(row.querySelector('[name=qty]').value || 0) * Number(row.querySelector('[name=unitCost]').value || 0);
+        total +=
+          Number(row.querySelector('[name=qty]').value || 0) *
+          Number(row.querySelector('[name=unitCost]').value || 0);
       });
       form.querySelector('#estTotal').textContent = money(total);
     };
@@ -154,8 +156,17 @@ export function openBookingDrawer(shopId, bookingId, onChange) {
     return `<form id="qcForm" class="card">
       <h3>Quality check</h3>
       <div class="qc-checklist grid grid-2" style="gap:4px">
-        ${['Road test done', 'No warning lights', 'No leaks under car', 'Reported problem fixed', 'Fluids topped up', 'Car cleaned']
-          .map((c) => `<label class="checkbox"><input type="checkbox" name="check" value="${c}" /> ${c}</label>`)
+        ${[
+          'Road test done',
+          'No warning lights',
+          'No leaks under car',
+          'Reported problem fixed',
+          'Fluids topped up',
+          'Car cleaned',
+        ]
+          .map(
+            (c) => `<label class="checkbox"><input type="checkbox" name="check" value="${c}" /> ${c}</label>`,
+          )
           .join('')}
       </div>
       <div class="field" style="margin-top:10px"><label>Notes</label><textarea name="note" rows="2"></textarea></div>
@@ -229,7 +240,14 @@ export function openBookingDrawer(shopId, bookingId, onChange) {
           : '<div class="card muted small">Nothing for you to do on this booking right now.</div>'
       }
 
-      ${b.issues.filter((i) => !i.resolvedAt).length ? `<div class="alert err" style="margin-top:16px"><b>Open QC issue:</b> ${b.issues.filter((i) => !i.resolvedAt).map((i) => `${esc(i.title)}${i.description ? ` - ${esc(i.description)}` : ''}`).join('; ')}</div>` : ''}
+      ${
+        b.issues.filter((i) => !i.resolvedAt).length
+          ? `<div class="alert err" style="margin-top:16px"><b>Open QC issue:</b> ${b.issues
+              .filter((i) => !i.resolvedAt)
+              .map((i) => `${esc(i.title)}${i.description ? ` - ${esc(i.description)}` : ''}`)
+              .join('; ')}</div>`
+          : ''
+      }
 
       ${qcForm(b)}
       ${showEditor ? estimateEditor(b, showEditor) : ''}
@@ -268,7 +286,11 @@ export function openBookingDrawer(shopId, bookingId, onChange) {
     drawer.el.querySelectorAll('[data-assign]').forEach((form) => {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        run(form.dataset.assign, { [form.dataset.field]: Number(form.elements.person.value) }, form.querySelector('button'));
+        run(
+          form.dataset.assign,
+          { [form.dataset.field]: Number(form.elements.person.value) },
+          form.querySelector('button'),
+        );
       });
     });
 
@@ -287,7 +309,12 @@ export function openBookingDrawer(shopId, bookingId, onChange) {
           title: 'Raise QC issue',
           fields: [
             { name: 'title', label: 'Issue title', required: true },
-            { name: 'description', label: 'Details for the technician', type: 'textarea', value: qc.elements.note.value },
+            {
+              name: 'description',
+              label: 'Details for the technician',
+              type: 'textarea',
+              value: qc.elements.note.value,
+            },
           ],
           submitLabel: 'Fail QC',
         });

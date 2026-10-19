@@ -12,7 +12,11 @@ export const money = (n) => `PKR ${Number(n || 0).toLocaleString('en-PK')}`;
 export function fmtDate(dateStr) {
   if (!dateStr) return '';
   const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
 }
 
 // Server timestamps are UTC "YYYY-MM-DD HH:MM:SS".
@@ -180,7 +184,10 @@ export function promptForm({ title, fields, submitLabel = 'Save', intro = '' }) 
 }
 
 export function confirmBox(message, label = 'Yes, continue') {
-  return promptForm({ title: 'Please confirm', fields: [], intro: `<p>${esc(message)}</p>`, submitLabel: label }).then(
-    (v) => v !== null,
-  );
+  return promptForm({
+    title: 'Please confirm',
+    fields: [],
+    intro: `<p>${esc(message)}</p>`,
+    submitLabel: label,
+  }).then((v) => v !== null);
 }

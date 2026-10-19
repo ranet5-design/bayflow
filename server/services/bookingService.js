@@ -28,7 +28,8 @@ export function createBooking(db, { shopId, customerId, serviceIds, notes, slotD
          AND id IN (${uniqueServices.map(() => '?').join(',')})`,
       )
       .all(shopId, ...uniqueServices);
-    if (found.length !== uniqueServices.length) throw badRequest('One or more services are not offered by this shop');
+    if (found.length !== uniqueServices.length)
+      throw badRequest('One or more services are not offered by this shop');
 
     // Capacity check and insert happen inside the same write transaction,
     // so two customers can't both take the last place in a slot.
@@ -266,15 +267,15 @@ export function listShopBookings(db, { shopId, role, userId, status, view }) {
   }
 
   const rows = db
-    .prepare(`${BOOKING_SELECT} WHERE ${where.join(' AND ')} ORDER BY b.slot_date DESC, b.slot_time DESC, b.id DESC`)
+    .prepare(
+      `${BOOKING_SELECT} WHERE ${where.join(' AND ')} ORDER BY b.slot_date DESC, b.slot_time DESC, b.id DESC`,
+    )
     .all(...params);
   return rows.map((r) => summary(db, r));
 }
 
 export function listCustomerBookings(db, customerId) {
-  const rows = db
-    .prepare(`${BOOKING_SELECT} WHERE b.customer_id = ? ORDER BY b.id DESC`)
-    .all(customerId);
+  const rows = db.prepare(`${BOOKING_SELECT} WHERE b.customer_id = ? ORDER BY b.id DESC`).all(customerId);
   return rows.map((r) => {
     const est = db.prepare('SELECT status FROM estimates WHERE booking_id = ?').get(r.id);
     return {
@@ -296,7 +297,9 @@ const estimateSchema = z.object({
 
 function saveEstimate(db, booking, userId, input) {
   for (const item of input.items) {
-    const part = db.prepare('SELECT unit_cost FROM parts WHERE id = ? AND shop_id = ?').get(item.partId, booking.shop_id);
+    const part = db
+      .prepare('SELECT unit_cost FROM parts WHERE id = ? AND shop_id = ?')
+      .get(item.partId, booking.shop_id);
     if (!part) throw badRequest(`Part ${item.partId} is not in this shop's inventory`);
     item.unitCost ??= part.unit_cost;
   }
@@ -321,7 +324,9 @@ function saveEstimate(db, booking, userId, input) {
     estimateId = Number(res.lastInsertRowid);
   }
 
-  const add = db.prepare('INSERT INTO estimate_items (estimate_id, part_id, qty, unit_cost) VALUES (?, ?, ?, ?)');
+  const add = db.prepare(
+    'INSERT INTO estimate_items (estimate_id, part_id, qty, unit_cost) VALUES (?, ?, ?, ?)',
+  );
   for (const item of input.items) add.run(estimateId, item.partId, item.qty, item.unitCost);
   return getEstimate(db, booking.id);
 }
@@ -337,7 +342,15 @@ export function editEstimate(db, { bookingId, shopId, actor, body }) {
       throw conflict('Estimate can only be edited while it is in ESTIMATE_REVIEW');
     }
     const est = saveEstimate(db, booking, actor.userId, input);
-    logHistory(db, booking.id, 'edit_estimate', booking.status, booking.status, actor, `Estimate revised (rev ${est.revision}), total PKR ${est.total}`);
+    logHistory(
+      db,
+      booking.id,
+      'edit_estimate',
+      booking.status,
+      booking.status,
+      actor,
+      `Estimate revised (rev ${est.revision}), total PKR ${est.total}`,
+    );
     return est;
   });
 }
@@ -430,9 +443,9 @@ const handlers = {
   },
 
   approve_estimate: ({ db, booking }) => {
-    db.prepare("UPDATE estimates SET status = 'APPROVED', decided_at = datetime('now') WHERE booking_id = ?").run(
-      booking.id,
-    );
+    db.prepare(
+      "UPDATE estimates SET status = 'APPROVED', decided_at = datetime('now') WHERE booking_id = ?",
+    ).run(booking.id);
     return {
       note: 'Customer accepted the estimate',
       after: () =>
@@ -529,9 +542,9 @@ const handlers = {
   }),
 
   send_to_qc: ({ db, booking }) => {
-    db.prepare("UPDATE qc_issues SET resolved_at = datetime('now') WHERE booking_id = ? AND resolved_at IS NULL").run(
-      booking.id,
-    );
+    db.prepare(
+      "UPDATE qc_issues SET resolved_at = datetime('now') WHERE booking_id = ? AND resolved_at IS NULL",
+    ).run(booking.id);
     return {
       fields: { qc_inspector_id: null },
       after: () =>
@@ -608,7 +621,9 @@ const handlers = {
     const released = releaseAllocations(db, booking.id);
     const byCustomer = actor.role === 'CUSTOMER';
     return {
-      note: [note, released ? `${released} reserved part line(s) returned to stock` : null].filter(Boolean).join('. '),
+      note: [note, released ? `${released} reserved part line(s) returned to stock` : null]
+        .filter(Boolean)
+        .join('. '),
       after: () =>
         notify(db, byCustomer ? shopDesk(db, booking.shop_id) : [booking.customer_id], {
           shopId: booking.shop_id,
@@ -619,7 +634,12 @@ const handlers = {
   },
 };
 
-const ALLOWED_FIELDS = new Set(['technician_id', 'parts_person_id', 'qc_inspector_id', 'customer_notified_at']);
+const ALLOWED_FIELDS = new Set([
+  'technician_id',
+  'parts_person_id',
+  'qc_inspector_id',
+  'customer_notified_at',
+]);
 
 /**
  * Runs one state machine action. Everything (checks, side effects, status
@@ -645,11 +665,16 @@ export function performAction(db, { bookingId, shopId = null, actor, action, pay
     }
 
     const newStatus = def.to ?? booking.status;
-    const sets = ['status = ?', "updated_at = datetime('now')", ...Object.keys(fields).map((k) => `${k} = ?`)];
+    const sets = [
+      'status = ?',
+      "updated_at = datetime('now')",
+      ...Object.keys(fields).map((k) => `${k} = ?`),
+    ];
     const update = db
       .prepare(`UPDATE bookings SET ${sets.join(', ')} WHERE id = ? AND status = ?`)
       .run(newStatus, ...Object.values(fields), booking.id, booking.status);
-    if (update.changes === 0) throw conflict('Someone else updated this booking first, refresh and try again');
+    if (update.changes === 0)
+      throw conflict('Someone else updated this booking first, refresh and try again');
 
     logHistory(db, booking.id, action, booking.status, newStatus, actor, result.note);
     result.after?.();

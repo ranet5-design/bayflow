@@ -75,7 +75,9 @@ router.post('/', (req, res) => {
         s.slotCapacity,
       );
     const newId = Number(result.lastInsertRowid);
-    req.db.prepare("INSERT INTO memberships (shop_id, user_id, role) VALUES (?, ?, 'OWNER')").run(newId, req.user.id);
+    req.db
+      .prepare("INSERT INTO memberships (shop_id, user_id, role) VALUES (?, ?, 'OWNER')")
+      .run(newId, req.user.id);
     return newId;
   });
   const shop = req.db.prepare('SELECT * FROM shops WHERE id = ?').get(shopId);
@@ -186,10 +188,14 @@ router.post('/:shopId/team', shopAccess('OWNER'), async (req, res) => {
     user = { id: Number(result.lastInsertRowid) };
   }
 
-  const already = req.db.prepare('SELECT 1 FROM memberships WHERE shop_id = ? AND user_id = ?').get(req.shopId, user.id);
+  const already = req.db
+    .prepare('SELECT 1 FROM memberships WHERE shop_id = ? AND user_id = ?')
+    .get(req.shopId, user.id);
   if (already) throw conflict('This person is already on the team');
 
-  req.db.prepare('INSERT INTO memberships (shop_id, user_id, role) VALUES (?, ?, ?)').run(req.shopId, user.id, body.role);
+  req.db
+    .prepare('INSERT INTO memberships (shop_id, user_id, role) VALUES (?, ?, ?)')
+    .run(req.shopId, user.id, body.role);
   res.status(201).json({ ok: true });
 });
 
@@ -199,7 +205,9 @@ router.patch('/:shopId/team/:membershipId', shopAccess('OWNER'), (req, res) => {
     z.object({ role: z.enum(STAFF_ROLES).optional(), active: z.boolean().optional() }),
     req.body,
   );
-  const m = req.db.prepare('SELECT * FROM memberships WHERE id = ? AND shop_id = ?').get(membershipId, req.shopId);
+  const m = req.db
+    .prepare('SELECT * FROM memberships WHERE id = ? AND shop_id = ?')
+    .get(membershipId, req.shopId);
   if (!m) throw notFound('Team member not found');
   if (m.role === 'OWNER') throw badRequest("The owner's membership can't be changed");
 
@@ -233,7 +241,9 @@ router.get('/:shopId/services', shopAccess(), (req, res) => {
 router.post('/:shopId/services', shopAccess('OWNER'), (req, res) => {
   const s = parse(serviceSchema, req.body);
   const result = req.db
-    .prepare('INSERT INTO services (shop_id, name, description, duration_min, base_price) VALUES (?, ?, ?, ?, ?)')
+    .prepare(
+      'INSERT INTO services (shop_id, name, description, duration_min, base_price) VALUES (?, ?, ?, ?, ?)',
+    )
     .run(req.shopId, s.name, s.description ?? null, s.durationMin, s.basePrice ?? null);
   res.status(201).json({ id: Number(result.lastInsertRowid) });
 });

@@ -95,7 +95,7 @@ export async function renderPos(root, [shopIdParam, tabParam]) {
     jobs: () =>
       renderBookingList(body, shopId, {
         view: isOwner ? 'TECHNICIAN' : undefined,
-        empty: 'No jobs assigned to you right now.',
+        empty: isOwner ? 'No jobs in the workshop right now.' : 'No jobs assigned to you right now.',
       }),
     parts: () =>
       renderBookingList(body, shopId, {
@@ -103,7 +103,8 @@ export async function renderPos(root, [shopIdParam, tabParam]) {
         empty: 'No bookings waiting on parts.',
         hideDone: !isOwner,
       }),
-    qc: () => renderBookingList(body, shopId, { view: isOwner ? 'QC' : undefined, empty: 'The QC queue is empty.' }),
+    qc: () =>
+      renderBookingList(body, shopId, { view: isOwner ? 'QC' : undefined, empty: 'The QC queue is empty.' }),
     inventory: () => renderInventory(body, shopId),
     team: () => renderTeam(body, shopId),
     services: () => renderServices(body, shopId),
@@ -116,7 +117,11 @@ export async function renderPos(root, [shopIdParam, tabParam]) {
 
 const FINISHED = ['COMPLETED', 'CANCELLED'];
 
-async function renderBookingList(box, shopId, { filters = false, view, empty = 'No bookings yet.', hideDone = false }) {
+async function renderBookingList(
+  box,
+  shopId,
+  { filters = false, view, empty = 'No bookings yet.', hideDone = false },
+) {
   let statusFilter = filters ? 'ACTIVE' : '';
   let all = [];
 
@@ -143,7 +148,10 @@ async function renderBookingList(box, shopId, { filters = false, view, empty = '
               <button class="chip ${statusFilter === 'ACTIVE' ? 'active' : ''}" data-f="ACTIVE">Active (${all.filter((b) => !FINISHED.includes(b.status)).length})</button>
               <button class="chip ${statusFilter === '' ? 'active' : ''}" data-f="">All (${all.length})</button>
               ${ALL_STATUSES.filter((s) => counts[s])
-                .map((s) => `<button class="chip ${statusFilter === s ? 'active' : ''}" data-f="${s}">${statusLabel(s)} (${counts[s]})</button>`)
+                .map(
+                  (s) =>
+                    `<button class="chip ${statusFilter === s ? 'active' : ''}" data-f="${s}">${statusLabel(s)} (${counts[s]})</button>`,
+                )
                 .join('')}
             </div>`
           : ''
@@ -272,12 +280,18 @@ async function renderTeam(box, shopId) {
   box.querySelector('#addMember').onclick = async () => {
     const values = await promptForm({
       title: 'Add team member',
-      intro: '<p class="small muted">If the email already has a BayFlow account (e.g. works at your other shop), the password is ignored and they are just added here.</p>',
+      intro:
+        '<p class="small muted">If the email already has a BayFlow account (e.g. works at your other shop), the password is ignored and they are just added here.</p>',
       fields: [
         { name: 'name', label: 'Full name', required: true },
         { name: 'email', label: 'Email', type: 'email', required: true },
         { name: 'phone', label: 'Phone' },
-        { name: 'role', label: 'Role', type: 'select', options: staffRoles.map((r) => ({ value: r, label: ROLE_LABEL[r] })) },
+        {
+          name: 'role',
+          label: 'Role',
+          type: 'select',
+          options: staffRoles.map((r) => ({ value: r, label: ROLE_LABEL[r] })),
+        },
         { name: 'password', label: 'Password (min 6 characters)', type: 'password' },
       ],
       submitLabel: 'Add member',
@@ -324,8 +338,19 @@ async function renderServices(box, shopId) {
       fields: [
         { name: 'name', label: 'Name', required: true, value: service?.name },
         { name: 'description', label: 'Description', type: 'textarea', value: service?.description },
-        { name: 'durationMin', label: 'Estimated duration (minutes)', type: 'number', required: true, value: service?.durationMin ?? 60 },
-        { name: 'basePrice', label: 'Base price PKR (optional)', type: 'number', value: service?.basePrice ?? '' },
+        {
+          name: 'durationMin',
+          label: 'Estimated duration (minutes)',
+          type: 'number',
+          required: true,
+          value: service?.durationMin ?? 60,
+        },
+        {
+          name: 'basePrice',
+          label: 'Base price PKR (optional)',
+          type: 'number',
+          value: service?.basePrice ?? '',
+        },
         ...(service
           ? [
               {

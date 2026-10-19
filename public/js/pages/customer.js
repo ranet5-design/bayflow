@@ -113,7 +113,13 @@ export async function renderMyBooking(root, [bookingId]) {
         if (!values) return;
         payload = { note: values.note || undefined };
       } else if (action === 'approve_estimate') {
-        if (!(await confirmBox(`Accept the estimate of ${b.estimate.total.toLocaleString('en-PK')} PKR?`, 'Accept'))) return;
+        if (
+          !(await confirmBox(
+            `Accept the estimate of ${b.estimate.total.toLocaleString('en-PK')} PKR?`,
+            'Accept',
+          ))
+        )
+          return;
       }
 
       await busy(btn, async () => {

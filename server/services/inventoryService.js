@@ -105,9 +105,7 @@ export function receivePurchaseOrder(db, { shopId, poId, items }) {
     const { open } = db
       .prepare('SELECT SUM(qty_ordered - qty_received) AS open FROM po_items WHERE po_id = ?')
       .get(poId);
-    const anyReceived = db
-      .prepare('SELECT 1 FROM po_items WHERE po_id = ? AND qty_received > 0')
-      .get(poId);
+    const anyReceived = db.prepare('SELECT 1 FROM po_items WHERE po_id = ? AND qty_received > 0').get(poId);
     const status = open === 0 ? 'RECEIVED' : anyReceived ? 'PARTIALLY_RECEIVED' : 'ORDERED';
     db.prepare("UPDATE purchase_orders SET status = ?, updated_at = datetime('now') WHERE id = ?").run(
       status,

@@ -89,7 +89,10 @@ export async function renderInventory(box, shopId) {
       busy(e.submitter, async () => {
         await api(`/shops/${shopId}/purchase-orders`, {
           method: 'POST',
-          body: { supplier: v.supplier || undefined, items: [{ partId: Number(v.partId), qty: Number(v.qty) }] },
+          body: {
+            supplier: v.supplier || undefined,
+            items: [{ partId: Number(v.partId), qty: Number(v.qty) }],
+          },
         });
         toast('Purchase order created');
         close();
@@ -121,7 +124,10 @@ export async function renderInventory(box, shopId) {
           qty: Number(qty || 0),
         }));
         busy(e.submitter, async () => {
-          const res = await api(`/shops/${shopId}/purchase-orders/${po.id}/receive`, { method: 'POST', body: { items } });
+          const res = await api(`/shops/${shopId}/purchase-orders/${po.id}/receive`, {
+            method: 'POST',
+            body: { items },
+          });
           toast(res.status === 'RECEIVED' ? 'Order fully received' : 'Partial delivery recorded');
           close();
           window.dispatchEvent(new Event('data-changed'));

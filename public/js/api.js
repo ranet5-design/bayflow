@@ -67,7 +67,11 @@ export async function api(path, { method = 'GET', body } = {}) {
       session.clear();
       window.dispatchEvent(new Event('session-changed'));
     }
-    throw new ApiError(data.error?.message || `Request failed (${res.status})`, res.status, data.error?.details);
+    throw new ApiError(
+      data.error?.message || `Request failed (${res.status})`,
+      res.status,
+      data.error?.details,
+    );
   }
   return data;
 }
